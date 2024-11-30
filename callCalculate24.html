@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>24点计算器</title>
+</head>
+<body>
+  <h1>24点计算器</h1>
+  <input id="num1" type="number" min="1" max="100" placeholder="数字1" />
+  <input id="num2" type="number" min="1" max="100" placeholder="数字2" />
+  <input id="num3" type="number" min="1" max="100" placeholder="数字3" />
+  <input id="num4" type="number" min="1" max="100" placeholder="数字4" />
+  <button onclick="find24()">计算</button>
+  <p id="result"></p>
+
+  <script>
+  function find24() {
+  const num1 = Number(document.getElementById('num1').value);
+  const num2 = Number(document.getElementById('num2').value);
+  const num3 = Number(document.getElementById('num3').value);
+  const num4 = Number(document.getElementById('num4').value);
+
+  if (isNaN(num1) || isNaN(num2) || isNaN(num3) || isNaN(num4)) {
+    document.getElementById('result').innerText = '请输入有效的数字';
+    return;
+  }
+
+  const nums = [num1, num2, num3, num4];
+  const operators = ['+', '-', '*', '/'];
+
+  function permute(nums) {
+    if (nums.length === 1) return [nums];
+    let perms = [];
+    for (let i = 0; i < nums.length; i++) {
+      let currNum = nums[i];
+      let remainingNums = nums.slice(0, i).concat(nums.slice(i + 1));
+      let innerPerms = permute(remainingNums);
+      for (let perm of innerPerms) {
+        perms.push([currNum].concat(perm));
+      }
+    }
+    return perms;
+  }
+
+  function evaluate(expression) {
+    try {
+      return eval(expression);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function generateExpressions(nums, ops) {
+    let expressions = [];
+    for (let op1 of ops) {
+      for (let op2 of ops) {
+        for (let op3 of ops) {
+          expressions.push(`(${nums[0]}${op1}${nums[1]})${op2}(${nums[2]}${op3}${nums[3]})`);
+          expressions.push(`(${nums[0]}${op1}(${nums[1]}${op2}${nums[2]}))${op3}${nums[3]}`);
+          expressions.push(`${nums[0]}${op1}(((${nums[1]}${op2}${nums[2]})${op3}${nums[3]})`);
+          expressions.push(`(${nums[0]}${op1}${nums[1]})${op2}${nums[2]}${op3}${nums[3]}`);
+          expressions.push(`${nums[0]}${op1}(${nums[1]}${op2}(${nums[2]}${op3}${nums[3]}))`);
+        }
+      }
+    }
+    return expressions;
+  }
+
+  let permutations = permute(nums);
+  for (let perm of permutations) {
+    let expressions = generateExpressions(perm, operators);
+    for (let expr of expressions) {
+      let result = evaluate(expr);
+      if (result !== null && Math.abs(result - 24) < 1e-6) {
+        document.getElementById('result').innerText = `找到解: ${expr} = 24`;
+        return;
+      }
+    }
+  }
+  document.getElementById('result').innerText = '没有找到解';
+}
+  </script>
+</body>
+</html>
